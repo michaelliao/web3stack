@@ -389,8 +389,8 @@ Temporary Items
 build
 artifacts
 cache
+generated
 
 !.gitignore
 !.gitsubmodules
-
 
