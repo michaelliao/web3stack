@@ -1,0 +1,8 @@
+type Card @entity(immutable: false) {
+  id: String!
+  owner: Bytes!
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+  image: String!
+}

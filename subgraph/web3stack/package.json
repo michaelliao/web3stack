@@ -1,0 +1,18 @@
+{
+  "name": "web3stack",
+  "license": "UNLICENSED",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ michaelliao/web3stack",
+    "create-local": "graph create --node http://localhost:8020/ michaelliao/web3stack",
+    "remove-local": "graph remove --node http://localhost:8020/ michaelliao/web3stack",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 michaelliao/web3stack",
+    "test": "graph test"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.38.0",
+    "@graphprotocol/graph-ts": "0.29.1"
+  },
+  "devDependencies": { "matchstick-as": "0.5.0" }
+}
