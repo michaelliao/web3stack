@@ -1,0 +1,200 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Web3 Stack</title>
+    <link id="linkFavicon" rel="shortcut icon" type="image/x-icon" href="/favicon.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.0.32/dist/ethers.umd.min.js"></script>
+
+    <script>
+        window.NFT_ADDR = '0x8131aa1b766966f9f8ec3e1132d9d29d92311ab0';
+        window.NFT_ABI = '[{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"approved","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":false,"internalType":"bool","name":"approved","type":"bool"}],"name":"ApprovalForAll","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"approve","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"addr","type":"address"}],"name":"getAbbrAddress","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"getApproved","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"getImage","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"operator","type":"address"}],"name":"isApprovedForAll","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"mint","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"bytes","name":"data","type":"bytes"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"operator","type":"address"},{"internalType":"bool","name":"approved","type":"bool"}],"name":"setApprovalForAll","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"tokenURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"transferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"}]';
+        window.CHAIN_ID = 80001;
+
+        function getWeb3Provider() {
+            if (!window.ethereum) {
+                console.error("there is no web3 provider.");
+                return null;
+            }
+            return new ethers.providers.Web3Provider(window.ethereum, "any");
+        }
+
+        function translateError(err) {
+            window.err = err;
+            if (typeof (err) === 'string') {
+                return err;
+            }
+            if (err.error && err.error.code && err.error.message) {
+                return `Error (${err.error.code}): ${err.error.message}`;
+            }
+            if (err.code && err.message) {
+                return `Error (${err.code}): ${err.message}`;
+            }
+            return err.message || err.toString();
+        }
+
+        $(function () {
+            console.log('init vue...');
+            window.vm = new Vue({
+                el: '#vm',
+                data: {
+                    // wallet account:
+                    account: null,
+                    // wallet chain:
+                    chainId: 0,
+                    // NFT list:
+                    nftList: []
+                },
+                computed: {
+                    wrongChain: function () {
+                        return this.chainId !== window.CHAIN_ID;
+                    },
+                    accountReady: function () {
+                        return this.account !== null;
+                    }
+                },
+                methods: {
+                    createNFT: async function () {
+                        if (!this.accountReady || this.wrongChain) {
+                            return alert('Please connect to wallet with chain ' + window.CHAIN_ID + '.');
+                        }
+                        try {
+                            let contract = new ethers.Contract(window.NFT_ADDR, window.NFT_ABI, window.getWeb3Provider().getSigner());
+                            console.log('wait for MetaMask confirm...');
+                            let tx = await contract.mint();
+                            console.log('wait for blockchain confirm...');
+                            await tx.wait(1);
+                            // TODO: get token ID from tx log:
+                        } catch (err) {
+                            return alert(translateError(err));
+                        }
+                    },
+                    accountChanged: function (accounts) {
+                        if (accounts.length === 0) {
+                            this.disconnected();
+                        } else {
+                            this.account = accounts[0];
+                        }
+                    },
+                    disconnected: async function () {
+                        this.account = null;
+                    },
+                    chainChanged: function (chainId) {
+                        this.chainId = parseInt(chainId, 16);
+                    },
+                    connectWallet: async function () {
+                        console.log('try connect wallet...');
+                        if (window.getWeb3Provider() === null) {
+                            console.error('there is no web3 provider.');
+                            return false;
+                        }
+                        try {
+                            this.accountChanged(await window.ethereum.request({
+                                method: 'eth_requestAccounts',
+                            }));
+                            this.chainChanged(await window.ethereum.request({
+                                method: 'eth_chainId'
+                            }));
+                            window.ethereum.on('disconnect', this.disconnected);
+                            window.ethereum.on('accountsChanged', this.accountChanged);
+                            window.ethereum.on('chainChanged', this.chainChanged);
+                        } catch (e) {
+                            console.error('could not get a wallet connection.', e);
+                            return false;
+                        }
+                        console.log('wallet connected.');
+                        return true;
+                    },
+                    switchChain: async function () {
+                        if (this.chainId !== window.CHAIN_ID) {
+                            await ethereum.request({
+                                method: 'wallet_switchEthereumChain',
+                                params: [{ chainId: '0x' + window.CHAIN_ID.toString(16) }]
+                            });
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div id="vm" class="container">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom"
+            style="position:fixed; top:0; left:0; right:0; z-index: 99;">
+            <div class="container">
+                <a class="navbar-brand" href="/"><i class="bi bi-stack"></i> Web3 Stack</a>
+                <ul id="wallet" class="mr-2 navbar-nav navbar-right-wrap" style="flex-direction: row !important;">
+                    <!-- 已连接Chain -->
+                    <li v-show="chainId > 0" class="nav-item">
+                        <!-- 连接到支持的Chain -->
+                        <span v-show="!wrongChain" class="nav-link">
+                            <i class="bi bi-check-circle"></i> Polygon Testnet
+                        </span>
+                        <!-- 连接到不支持的Chain -->
+                        <a v-show="wrongChain" v-on:click="switchChain" href="#0" class="nav-link">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <span v-text="'Chain#'+chainId"></span>
+                        </a>
+                    </li>
+                    <!-- 未连接账号 -->
+                    <li v-if="account===null" class="nav-item ms-2">
+                        <button v-on:click="connectWallet" type="button" class="btn btn-outline-primary">
+                            Connect Wallet
+                        </button>
+                    </li>
+                    <!-- 已连接账号 -->
+                    <li v-if="account!==null" class="nav-item ms-2">
+                        <a href="#0" class="nav-link">
+                            <span v-text="account.substring(0, 6)+'...'+account.substring(38)"></span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div style="padding-top: 80px;">
+            <div class="row">
+                <div class="col-12">
+                    <h3>NFT List</h3>
+                    <div class="mb-3">
+                        List of NFT Cards...
+                    </div>
+                    <div>
+                        <button v-on:click="createNFT" class="btn btn-outline-success">Create</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="p-5 mt-5 bg-light border-top">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="mb-4"><i class="bi bi-stack"></i> Web3 Stack, copyleft 2023</div>
+                    <ul class="list-unstyled small text-muted">
+                        <li class="mb-2">Check the source code on
+                            <a href="https://github.com/michaelliao/web3stack">Github</a>
+                        </li>
+                        <li class="mb-2">Code licensed
+                            <a href="https://github.com/michaelliao/web3stack/blob/master/LICENSE">GPLv3</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>

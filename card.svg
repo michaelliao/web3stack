@@ -1,0 +1,5 @@
+<svg viewBox="0 0 640 360" width="640" height="360" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <rect fill="#fff" stroke="#000" stroke-width="5" x="3" y="3" width="634" height="354" rx="20" ry="20"></rect>
+    <path fill="none" stroke="#000" stroke-width="5" d="M 130.001 130.001 C 149.242 130.001 161.266 109.166 151.65 92.5 C 147.182 84.767 138.925 80 130.001 80 C 110.75 80 98.725 100.833 108.35 117.5 C 112.817 125.233 121.067 130.001 130.001 130.001 Z M 180 171.667 C 180 180 171.667 180 171.667 180 L 88.334 180 C 88.334 180 80 180 80 171.667 C 80 163.333 88.334 138.333 130.001 138.333 C 171.667 138.333 180 163.333 180 171.667 Z"></path>
+    <text fill="#000" style="font-family: Arial; font-size: 48px;" x="220" y="150">0xA1B2...8E9F</text>
+</svg>
